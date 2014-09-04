@@ -63,7 +63,7 @@ app.put('/:id/:item', function(req, res){
 					dropbox(ix,campus[i]);
 					res.set({'Content-Type': 'application/json'});
 					res.status(200);
-					res.set([]);
+					res.send([]);
 				} else {
 					res.status(404);
 					res.send("you do not have this");
