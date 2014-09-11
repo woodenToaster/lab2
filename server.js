@@ -1,5 +1,18 @@
 var express = require('express');
+var cookieParser = require('cookie-parser');
+var session = require('express-session');
+var uuid = require('node-uuid');
+var agents = {};
+
 var app = express();
+app.use(cookieParser());
+app.use(session({
+		secret: 'supercalisatanistic',
+		resave: true,
+		saveUninitialized: true,
+		genid: uuid.v1
+	}
+));
 
 app.get('/', function(req, res){
 	res.status(200);
@@ -35,19 +48,21 @@ app.delete('/:id/:item', function(req, res){
 		if (req.params.id == campus[i].id) {
 		    res.set({'Content-Type': 'application/json'});
 		    var ix = -1;
-		    if (campus[i].what != undefined) {
+		    if (campus[i].what !== undefined) {
 					ix = campus[i].what.indexOf(req.params.item);
 		    }
 		    if (ix >= 0) {
 		       res.status(200);
+		    
 			inventory.push(campus[i].what[ix]); // stash
-		        res.send(inventory);
+		    res.send(inventory);
 			campus[i].what.splice(ix, 1); // room no longer has this
 			return;
 		    }
 		    res.status(200);
 		    res.send([]);
 		    return;
+			
 		}
 	}
 	res.status(404);
@@ -58,7 +73,7 @@ app.put('/:id/:item', function(req, res){
 	for (var i in campus) {
 		if (req.params.id == campus[i].id) {
 				// Check you have this
-				var ix = inventory.indexOf(req.params.item)
+				var ix = inventory.indexOf(req.params.item);
 				if (ix >= 0) {
 					dropbox(ix,campus[i]);
 					res.set({'Content-Type': 'application/json'});
@@ -81,14 +96,18 @@ var dropbox = function(ix,room) {
 	var item = inventory[ix];
 	inventory.splice(ix, 1);	 // remove from inventory
 	if (room.id == 'allen-fieldhouse' && item == "basketball") {
-		room.text	+= " Someone found the ball so there is a game going on!"
+		room.text	+= " Someone found the ball so there is a game going on!";
 		return;
 	}
-	if (room.what == undefined) {
+	if (room.id == 'outside-fraser' && item == 'ku flag') {
+		room.text += " You brought the flag to Fraser!";
+		return;
+	}
+	if (room.what === undefined) {
 		room.what = [];
 	}
 	room.what.push(item);
-}
+};
 
 var inventory = ["laptop"];
 
@@ -132,7 +151,7 @@ var campus =
       },
       { "id": "spencer-museum",
 	"where": "SpencerMuseum.jpg",
-	"next": {"south": "outside-fraser","west":"memorial-stadium"},
+	"next": {"south": "outside-fraser","west":"memorial-stadium", "east": "jail"},
 	"what": ["art"],
 	"text": "You are at the Spencer Museum of Art."
       },
@@ -146,5 +165,9 @@ var campus =
 	"where": "AllenFieldhouse.jpg",
 	"next": {"north": "eaton-hall","east": "ambler-recreation","west": "dole-institute"},
 	"text": "Rock Chalk! You're at the field house."
-      }
-    ]
+      },
+      { "id": "jail",
+    "where": "Jail.jpg",
+    "next": {},
+    "text": "You steal you go to jail punk!"}
+    ];

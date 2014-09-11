@@ -1,13 +1,4 @@
-<html>
-  <body>
-  <font size=4><div id="where"></div></font>
-  <img id="picture" src="">
-  <font size=3><div id="what"></div></font>
-  <font size=3><div id="inventory"></div></font>
-  <font size=3><div id="next"></div></font>
-  <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
-  <script>
-    $(function() {
+$(function() {
       $("#where").html("booting...");
       where = "strong-hall";
 
@@ -84,6 +75,3 @@
       refresh();
 
     });
-  </script>
-  </body>
-</html>
