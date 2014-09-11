@@ -20,6 +20,8 @@ app.get('/', function(req, res){
 });
 
 app.get('/:id', function(req, res){
+	var sess = req.session;
+	console.log(sess);
 	if (req.params.id == "inventory") {
 	    res.set({'Content-Type': 'application/json'});
 	    res.status(200);

@@ -1,0 +1,26 @@
+{
+  "name": "lab2",
+  "version": "0.0.0",
+  "description": "Adding sessions to the KU adventure game",
+  "main": "server.js",
+  "dependencies": {
+    "cookie-parser": "~1.3.3",
+    "express-session": "~1.8.1",
+    "express": "~4.8.7",
+    "node-uuid": "~1.4.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/woodenToaster/lab2"
+  },
+  "author": "Chris Hogan",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/woodenToaster/lab2/issues"
+  }
+}
