@@ -1,10 +1,18 @@
 <html>
-  <body>
-  <font size=4><div id="where"></div></font>
-  <img id="picture" src="">
-  <font size=3><div id="what"></div></font>
-  <font size=3><div id="inventory"></div></font>
-  <font size=3><div id="next"></div></font>
+  <head>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+  </head>
+  <body class="jumbotron">
+  <h1>
+    <div id="where" class="row text-center bg-primary"></div>
+  </h1>
+  <img id="picture" src="" class="img-rounded center-block">
+  <div id="what" class="row"></div>
+  <div id="inventory" class="row"></div>
+  <div id="next" class="row"></div>
   <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
   <script>
     $(function() {
@@ -24,6 +32,7 @@
                 $("#what").append(item);
                 
                 button = $("<button/>");
+                button.addClass("btn btn-primary");
                 button.text("Take " + item);
                 (function(button,where,item) {
                   button.click(function() {
@@ -43,6 +52,7 @@
           for(var i in data.next) {
             $("#next").append(i);
             button = $("<button/>");
+            button.addClass("btn btn-info");
             button.text("Go " + i);
             (function(button,dest) {
               button.click(function() {
@@ -64,6 +74,7 @@
                var item = data[i];
                $("#inventory").append(item);
                button = $("<button/>");
+               button.addClass("btn btn-danger");
                button.text("Drop " + item);
                 (function(button,where,item) {
                   button.click(function() {
