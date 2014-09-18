@@ -49,7 +49,7 @@ app.use(function(req, res, next) {
 			"where": "StrongHall.jpg",
 			"next": {"east": "outside-fraser", "north": "memorial-stadium", "west": "snow-hall"},
 			"what": ["coffee"],
-			"text": "You are outside Stong Hall."
+			"text": "You are outside Strong Hall."
 		},
 		{ 
 			"id": "ambler-recreation",
@@ -132,12 +132,30 @@ app.get('/:id', function(req, res){
 	res.send("not found, sorry");
 });
 
-app.get('/images/:name', function(req, res){
+app.get('/:id/interaction', function (req, res) {
+	var agent = req.session.id;
+	var peopleHere = [];
+	var location = req.params.id;
+	for(var i in agents) {
+		console.log(i);
+		console.log(agents[i].location);
+		if(agents[i].location.id == location && i != agent) {
+			peopleHere.push(i);
+		}
+	}
+	console.log(peopleHere);
+	res.set({'Content-Type': 'application/json'});
+	res.status(200);
+	res.send(peopleHere);
+	return;
+});
+
+app.get('/images/:name', function (req, res) {
 	res.status(200);
 	res.sendFile(__dirname + "/" + req.params.name);
 });
 
-app.delete('/:id/:item', function(req, res){
+app.delete('/:id/:item', function (req, res) {
 	var agent = req.session.id;
 	var campus = agents[agent].campus;
 	var inventory = agents[agent].inventory; 
@@ -164,7 +182,7 @@ app.delete('/:id/:item', function(req, res){
 	res.send("location not found");
 });
 
-app.put('/:id/:item', function(req, res){
+app.put('/:id/:item', function (req, res) {
 	var agent = req.session.id;
 	var campus = agents[agent].campus;
 	var inventory = agents[agent].inventory;
