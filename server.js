@@ -2,12 +2,14 @@ var express = require('express');
 var cookieParser = require('cookie-parser');
 var uuid = require('node-uuid');
 var extend = require('util')._extend;
+var path = require('path');
 //externalize cookie secret
 var credentials = require('./credentials.js');
 var agents = {};
 var app = express();
 
 app.use(cookieParser(credentials.cookieSecret));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(require('express-session')({
 	secret: credentials.cookieSecret,
@@ -88,7 +90,7 @@ app.use(function(req, res, next) {
 			"id": "jail",
 		  "where": "Jail.jpg",
 		  "next": {},
-		  "text": "You steal you go to jail punk!"
+		  "text": "You've been put in prison!  Maybe you were framed..."
 		}
   ];
   //Add this agent to agents if it doesn't already exist
@@ -114,15 +116,19 @@ app.get('/:id', function(req, res){
 	if (req.params.id == "inventory") {
 	    res.set({'Content-Type': 'application/json'});
 	    res.status(200);
-	    //console.log("Inventory: " + JSON.stringify(inventory));
 	    res.send(inventory);
 	    return;
+	}
+	if (agents[agent].location == "jail") {
+			res.set({'Content-Type': 'application/json'});
+		    res.status(200);
+		    res.send(campus[campus.length - 1]);
+		    return;
 	}
 	for (var i in campus) {
 		if (req.params.id == campus[i].id) {
 		    res.set({'Content-Type': 'application/json'});
 		    res.status(200);
-		    //console.log("Location: " + JSON.stringify(campus[i]));
 		    agents[agent].location = campus[i];
 		    res.send(campus[i]);
 		    return;
@@ -137,13 +143,10 @@ app.get('/:id/interaction', function (req, res) {
 	var peopleHere = [];
 	var location = req.params.id;
 	for(var i in agents) {
-		console.log(i);
-		console.log(agents[i].location);
 		if(agents[i].location.id == location && i != agent) {
 			peopleHere.push(i);
 		}
 	}
-	console.log(peopleHere);
 	res.set({'Content-Type': 'application/json'});
 	res.status(200);
 	res.send(peopleHere);
@@ -182,6 +185,14 @@ app.delete('/:id/:item', function (req, res) {
 	res.send("location not found");
 });
 
+app.put('/send/tojail/:cookie', function (req, res) {
+	agents[req.params.cookie].location = "jail";
+	agents[req.params.cookie].inventory = [];
+	res.set({'Content-Type': 'application/json'});
+	res.status(200);
+	res.send([]);
+});
+
 app.put('/:id/:item', function (req, res) {
 	var agent = req.session.id;
 	var campus = agents[agent].campus;
@@ -205,6 +216,8 @@ app.put('/:id/:item', function (req, res) {
 	res.status(404);
 	res.send("location not found");
 });
+
+
 
 app.listen(3000);
 

@@ -1,6 +1,7 @@
 <html>
   <head>
     <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <link rel="stylesheet" href="/stylesheet.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
   </head>
@@ -15,10 +16,10 @@
   </h1>
   <img id="picture" src="" class="img-rounded center-block">
   <div class="container-fluid">
-    <div id="what" class="row"></div>
-    <div id="inventory" class="row"></div>
-    <div id="next" class="row"></div>
-    <div id="interaction" class="row"></div>
+    <div id="what" class="panel panel-default lead"></div>
+    <div id="inventory" class="panel panel-default lead"></div>
+    <div id="next" class="panel panel-default lead"></div>
+    <div id="interaction" class="panel panel-default lead"></div>
   </div>
   
   <script>
@@ -57,7 +58,7 @@
 
           $("#next").html("");
           for(var i in data.next) {
-            $("#next").append(i);
+            $("#next").append(i + " ");
             button = $("<button/>");
             button.addClass("btn btn-info");
             button.text("Go " + i);
@@ -74,9 +75,24 @@
         $.get("/" + where + "/interaction", function (interactionData) {
              $("#interaction").html("");
             for(var i in interactionData) {
-              personDiv = $("<div/>");
-              personDiv.text("User " + interactionData[i] + " is also here.");
-              $("#interaction").append(personDiv);
+              $("#interaction").append("User with cookie " + interactionData[i] + 
+                " is also here.  Please don't use this information for evil.");
+              button = $('<button/>');
+              button.addClass("btn btn-danger");
+              button.text("Use this information for evil");
+              (function(button, cookie) {
+                button.click(function() {
+                  console.log(interactionData[i]);
+                  $.ajax("/send/tojail/" + interactionData[i],
+                    {
+                      success: refresh,
+                      type: "PUT"
+                    }
+                  );
+                  refresh();
+                });
+              })(button, interactionData[i]);
+              $("#interaction").append(button);
             }
         });
 
@@ -87,9 +103,9 @@
              $("#inventory").html("You are carrying : ");
              for(var i in data) {
                var item = data[i];
-               $("#inventory").append(item);
+               $("#inventory").append(item + " ");
                button = $("<button/>");
-               button.addClass("btn btn-danger");
+               button.addClass("btn btn-warning");
                button.text("Drop " + item);
                 (function(button,where,item) {
                   button.click(function() {
