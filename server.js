@@ -3,10 +3,21 @@ var cookieParser = require('cookie-parser');
 var uuid = require('node-uuid');
 var extend = require('util')._extend;
 var path = require('path');
+var mysql = require('mysql');
 //externalize cookie secret
 var credentials = require('./credentials.js');
 var agents = {};
 var app = express();
+
+//create default campus object
+
+//populate agents with users from db.  
+
+//populate users' inventories and location
+
+//update 'what' at every location.
+
+
 
 app.use(cookieParser(credentials.cookieSecret));
 app.use(express.static(path.join(__dirname, 'public')));
