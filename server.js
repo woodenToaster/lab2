@@ -17,7 +17,14 @@ var app = express();
 
 //update 'what' at every location.
 
+var connection = mysql.createConnection({
+  host     : 'mysql.eecs.ku.edu',
+  user     : 'chogan',
+  password : '581!!'
+});
 
+connection.connect();
+connection.query('use chogan');
 
 app.use(cookieParser(credentials.cookieSecret));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -107,6 +114,7 @@ app.use(function(req, res, next) {
   //Add this agent to agents if it doesn't already exist
 	if(!agents.hasOwnProperty(agent)) {
 		agents[agent] = {
+		  "name": agent,
 		  "location": 'strong-hall',
 		  "inventory": ['laptop'],
 		  "campus": campus
@@ -116,7 +124,18 @@ app.use(function(req, res, next) {
 });
 
 app.get('/', function(req, res){
+	var agent = req.session.id;
+
+	connection.query('INSERT INTO Users (Name, Location)' +
+					 'values (?, ?)',
+					  [agents[agent].name, 
+					   agents[agent].location], function(err, rows, fields) {
+	  if (err) throw err;
+
+	  //console.log('The solution is: ', rows[0].solution);
+});
 	res.status(200);
+
 	res.sendFile(__dirname + "/index.html");
 });
 
@@ -231,6 +250,8 @@ app.put('/:id/:item', function (req, res) {
 
 
 app.listen(3000);
+
+
 
 var dropbox = function(ix, room, req) {
 	var agent = req.session.id;
