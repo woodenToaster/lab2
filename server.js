@@ -18,7 +18,7 @@ var app = express();
 //update 'what' at every location.
 
 var connection = mysql.createConnection({
-  host     : 'mysql.eecs.ku.edu',
+  host     : 'https://mysql.eecs.ku.edu',
   user     : 'chogan',
   password : '581!!'
 });
@@ -126,14 +126,16 @@ app.use(function(req, res, next) {
 app.get('/', function(req, res){
 	var agent = req.session.id;
 
+	/*
 	connection.query('INSERT INTO Users (Name, Location)' +
 					 'values (?, ?)',
 					  [agents[agent].name, 
 					   agents[agent].location], function(err, rows, fields) {
 	  if (err) throw err;
-
+	
 	  //console.log('The solution is: ', rows[0].solution);
-});
+  });
+*/
 	res.status(200);
 
 	res.sendFile(__dirname + "/index.html");
@@ -213,6 +215,15 @@ app.delete('/:id/:item', function (req, res) {
 	}
 	res.status(404);
 	res.send("location not found");
+});
+
+app.post('/login/:name', function (req, res) {
+	connection.query('SELECT ? FROM Users', [name], function(err, results) {
+		console.log(results);
+	});
+	res.set({'Content-Type': 'application/json'});
+	res.status(200);
+	res.send([]);
 });
 
 app.put('/send/tojail/:cookie', function (req, res) {
