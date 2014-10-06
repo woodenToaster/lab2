@@ -9,14 +9,15 @@ var credentials = require('./credentials.js');
 var agents = {};
 var app = express();
 
-//create default campus object
 
-//populate agents with users from db.  
 
-//populate users' inventories and location
+  
 
-//update 'what' at every location.
 
+
+//TODO: update 'what' at every location.
+
+/*
 var connection = mysql.createConnection({
   host     : 'https://mysql.eecs.ku.edu',
   user     : 'chogan',
@@ -25,7 +26,7 @@ var connection = mysql.createConnection({
 
 connection.connect();
 connection.query('use chogan');
-
+*/
 app.use(cookieParser(credentials.cookieSecret));
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -36,9 +37,8 @@ app.use(require('express-session')({
 	genid: uuid.v1
 }));
 
-app.use(function(req, res, next) {
+app.get('/', function(req, res){
 	var agent = req.session.id;
-	//give each agent its own private campus
 	var campus = [
 		{ 
 		  "id": "lied-center",
@@ -111,6 +111,7 @@ app.use(function(req, res, next) {
 		  "text": "You've been put in prison!  Maybe you were framed..."
 		}
   ];
+  /*
   //Add this agent to agents if it doesn't already exist
 	if(!agents.hasOwnProperty(agent)) {
 		agents[agent] = {
@@ -121,23 +122,18 @@ app.use(function(req, res, next) {
 		};
 	}
 	next();
+	*/
 });
 
 app.get('/', function(req, res){
 	var agent = req.session.id;
-
-	/*
-	connection.query('INSERT INTO Users (Name, Location)' +
-					 'values (?, ?)',
-					  [agents[agent].name, 
-					   agents[agent].location], function(err, rows, fields) {
-	  if (err) throw err;
-	
-	  //console.log('The solution is: ', rows[0].solution);
-  });
-*/
+	agents[agent] = {
+	  //"sid": req.session.id;
+	  "inventory": ['laptop'],//getInventory(inv),
+	  "location": 'strong-hall',//results[0].location;
+	  "campus": campus
+  };
 	res.status(200);
-
 	res.sendFile(__dirname + "/index.html");
 });
 
@@ -218,9 +214,108 @@ app.delete('/:id/:item', function (req, res) {
 });
 
 app.post('/login/:name', function (req, res) {
+<<<<<<< HEAD
 	connection.query('SELECT ? FROM Users', [name], function(err, results) {
 		console.log(results);
 	});
+=======
+	
+	var campus = [
+		{ 
+		  "id": "lied-center",
+			"where": "LiedCenter.jpg",
+			"next": {"east": "eaton-hall", "south": "dole-institute"},
+			"text": "You are outside the Lied Center."
+		},
+		{ 
+			"id": "dole-institute",
+			"where": "DoleInstituteofPolitics.jpg",
+			"next": {"east": "allen-fieldhouse", "north": "lied-center"},
+			"text": "You take in the view of the Dole Institute of Politics. This is the best part of your walk to Nichols Hall."
+		},
+		{ 
+			"id": "eaton-hall",
+			"where": "EatonHall.jpg",
+			"next": {"east": "snow-hall", "south": "allen-fieldhouse", "west": "lied-center"},
+			"text": "You are outside Eaton Hall. You should recognize here."
+		},
+		{ 
+			"id": "snow-hall",
+			"where": "SnowHall.jpg",
+			"next": {"east": "strong-hall", "south": "ambler-recreation", "west": "eaton-hall"},
+			"text": "You are outside Snow Hall. Math class? Waiting for the bus?"
+		},
+		{ 
+			"id": "strong-hall",
+			"where": "StrongHall.jpg",
+			"next": {"east": "outside-fraser", "north": "memorial-stadium", "west": "snow-hall"},
+			"what": ["coffee"],
+			"text": "You are outside Strong Hall."
+		},
+		{ 
+			"id": "ambler-recreation",
+			"where": "AmblerRecreation.jpg",
+			"next": {"west": "allen-fieldhouse", "north": "snow-hall"},
+			"text": "It's the starting of the semester, and you feel motivated to be at the Gym. Let's see about that in 3 weeks."
+		},
+		{ 
+			"id": "outside-fraser",
+		  "where": "OutsideFraserHall.jpg",
+			"next": {"west": "strong-hall","north":"spencer-museum"},
+			"what": ["basketball"],
+			"text": "On your walk to the Kansas Union, you wish you had class outside."
+		},
+		{ 
+			"id": "spencer-museum",
+			"where": "SpencerMuseum.jpg",
+			"next": {"south": "outside-fraser","west":"memorial-stadium", "east": "jail"},
+			"what": ["art"],
+			"text": "You are at the Spencer Museum of Art."
+		},
+		{ 
+			"id": "memorial-stadium",
+			"where": "MemorialStadium.jpg",
+			"next": {"south": "strong-hall","east":"spencer-museum"},
+			"what": ["ku flag"],
+			"text": "Half the crowd is wearing KU Basketball gear at the football game."
+		},
+		{ 
+			"id": "allen-fieldhouse",
+			"where": "AllenFieldhouse.jpg",
+			"next": {"north": "eaton-hall","east": "ambler-recreation","west": "dole-institute"},
+			"text": "Rock Chalk! You're at the field house."
+		},
+		{ 
+			"id": "jail",
+		  "where": "Jail.jpg",
+		  "next": {},
+		  "text": "You've been put in prison!  Maybe you were framed..."
+		}
+  ];
+
+  agents[req.session.id] = {
+				  //"sid": req.session.id;
+				  "inventory": ['laptop'],//getInventory(inv),
+				  "location": 'strong-hall',//results[0].location;
+				  "campus": campus
+			  };
+  /*
+	connection.query('SELECT ? FROM Users', [name], function(err, results) {
+		if (results) {
+			connection.query('SELECT * FROM Inventory WHERE Name = ?', 
+											 [name], function (err, inv) {
+				
+				agents[name] = {
+				  "sid": req.session.id;
+				  "inventory": getInventory(inv),
+				  "location": results[0].location;
+				  "campus": campus
+			  };
+			});
+		}
+	});
+*/
+>>>>>>> 9576e1cd5c6b1e97a9cef8f6cd489cbfd69885f5
 	res.set({'Content-Type': 'application/json'});
 	res.status(200);
 	res.send([]);
@@ -284,4 +379,10 @@ var dropbox = function(ix, room, req) {
 	room.what.push(item);
 };
 
-    
+/* param: inventory - a mysql query result
+ * return: an array of strings
+ */
+function getInventory(inventory) {
+	var placeHolder = 'test';
+
+}   

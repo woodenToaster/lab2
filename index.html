@@ -6,8 +6,8 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
   </head>
   <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
-    <div class="container-fluid">
-      Navigation
+    <div class="container-fluid" id="login">
+      <input type="button" value="Login" onclick="logIn()"></input>
     </div>
   </nav>
   <body class="jumbotron">
@@ -23,9 +23,23 @@
   </div>
   
   <script>
+    function logIn() {
+        username = prompt("Enter your name");
+        $.ajax("/login/" + username,
+          {
+            success: refresh,
+            type: "POST" 
+          }
+        );
+        refresh();
+    }
+    
     $(function() {
       $("#where").html("booting...");
       where = "strong-hall";
+      var username = undefined;
+      
+      
 
       function refresh() {
         $.get("/" + where, function (data) {
