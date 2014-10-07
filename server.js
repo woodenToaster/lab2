@@ -37,16 +37,42 @@ app.use(require('express-session')({
 }));
 
 app.get('/', function(req, res){
+	agents[req.session.id] = {
+		'location': 'strong-hall',
+		'inventory': [],
+		'campus': {
+			"id": "strong-hall",
+			"where": "StrongHall.jpg",
+			"next": {},
+			"text": "Please log in."
+		}
+	}
 	res.status(200);
 	res.sendFile(__dirname + "/index.html");
 });
 
 app.get('/:id', function(req, res){
-	var agent;
-	var inventory;
+	var agent = req.session.id;
+	var inventory = [];
 	var campus;
-	getUserInfo(agent, inventory, campus, req);
+	connection.query('SELECT * FROM Users WHERE SID = ?', [agent], function (err, res) {
+		if(res.length > 0) {
+			console.log("Name: " + res);
+			agent = res.Name;
 
+		}
+	});
+	
+	connection.query('SELECT * FROM Inventory WHERE Name = ?', [agent], function (err, inv) {
+		for (var item in inv) {
+			inventory.push(item);
+		}
+	});
+	
+	if(agents[agent]) {
+		campus = agents[agent].campus;
+	}
+	console.log(JSON.stringify(campus));
 	if (req.params.id == "inventory") {
 	    res.set({'Content-Type': 'application/json'});
 	    res.status(200);
@@ -62,7 +88,8 @@ app.get('/:id', function(req, res){
 		}
 	}
 	for (var i in campus) {
-		if (req.params.id == campus[i].id) {
+		console.log(campus[i]);
+		if (req.params.id == campus[i]) {
 		    res.set({'Content-Type': 'application/json'});
 		    res.status(200);
 		    agents[agent].location = campus[i];
@@ -75,9 +102,13 @@ app.get('/:id', function(req, res){
 });
 
 app.get('/:id/interaction', function (req, res) {
-	var agent = req.session.id;
+	var agent;
+	var inventory;
+	var campus;
 	var peopleHere = [];
 	var location = req.params.id;
+	getUserInfo(agent, inventory, campus, req);
+
 	for(var i in agents) {
 		if(agents[i].location.id == location && i != agent) {
 			peopleHere.push(i);
@@ -121,8 +152,10 @@ app.delete('/:id/:item', function (req, res) {
 	res.send("location not found");
 });
 
-app.put('/login/:name', function (req, res) {
+app.post('/login/:name', function (req, res) {
+	
 	var name = req.params.name;
+	console.log(name);
 	var campus = [
 		{ 
 		  "id": "lied-center",
@@ -196,11 +229,11 @@ app.put('/login/:name', function (req, res) {
 		}
     ];
 
-	connection.query('SELECT ? FROM Users', [name], function(err, results) {
-		if (results) {
+	connection.query('SELECT * FROM Users WHERE Name = ?', [name], function(err, results) {
+		if (results.length != 0) {
 			connection.query('SELECT * FROM Inventory WHERE Name = ?', 
 											 [name], function (err, inv) {
-				
+				console.log(name + " already in db.");
 				agents[name] = {
 				  "sid": req.session.id,
 				  "inventory": [inv[0]],//getInventory(inv)
@@ -215,6 +248,7 @@ app.put('/login/:name', function (req, res) {
 			//Add this user to the database.
 			connection.query('INSERT INTO Users (Name, Location, SID) VALUES (?, ?, ?)',
 							  [name, 'strong-hall', req.session.id], function (err) {
+			  	console.log(name + " inserted into db.");
 			  	if(err) {
 			  		console.log(err);
 			  	}
@@ -225,6 +259,14 @@ app.put('/login/:name', function (req, res) {
 					console.log(err);
 				}
 			});
+
+			//add this user to the agents in memory
+			agents[name] = {
+				"sid": req.session.id,
+				"inventory": ['laptop'],
+				"location": 'strong-hall',
+				"campus": campus
+			}
 		}
 	});
 

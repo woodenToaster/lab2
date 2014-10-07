@@ -30,22 +30,40 @@
       where = "strong-hall";
       var username;
 
+      
+
       function refresh() {
-        
+          
           if(username === undefined) {
-            username = prompt("Enter your name.");
-            $.ajax("/login/" + username,
-              {
-                success: refresh,
-                type: "PUT" 
-              }
-            );
-            refresh();
+              var loginButton = $('<button/>');
+              loginButton.text('Login');
+              loginButton.addClass('btn btn-primary');
+              (function(loginButton) {
+                loginButton.click(function() {
+                  username = prompt("Enter your name.");
+                  $.ajax("/login/" + username,
+                    {
+                      success: refresh,
+                      type: "POST" 
+                    }
+                  );
+                  refresh();
+                });
+              })(loginButton);
+              $('#login').append(loginButton);
+          } else {
+              var logoutButton = $('<button/>');
+              logoutButton.text('Logout');
+              logoutButton.addClass('btn btn-primary');
+              (function(logoutButton) {
+                logoutButton.click(function() {
+                  //save info to db
+                });
+                refresh();
+              })(logoutButton);
+              $('#login').append(logoutButton);
           }
-          
-          while(username === undefined) {
-          }
-          
+
           $.get("/" + where, function (data) {
              $("#where").html(data.text);
              $("#picture").attr("src","images/" + data.where);
@@ -141,8 +159,8 @@
           });
       }
      
-    refresh();
-      
+      refresh();
+    
     });
   </script>
   </body>
