@@ -38,14 +38,14 @@ app.use(require('express-session')({
 
 app.get('/', function(req, res){
 	agents[req.session.id] = {
-		'location': 'strong-hall',
-		'inventory': [],
-		'campus': {
+		"location": 'strong-hall',
+		"inventory": [],
+		"campus": { 
 			"id": "strong-hall",
 			"where": "StrongHall.jpg",
-			"next": {},
+			"next": {"east": "eaton-hall", "south": "dole-institute"},
 			"text": "Please log in."
-		}
+		},
 	}
 	res.status(200);
 	res.sendFile(__dirname + "/index.html");
@@ -53,21 +53,8 @@ app.get('/', function(req, res){
 
 app.get('/:id', function(req, res){
 	var agent = req.session.id;
-	var inventory = [];
-	var campus;
-	connection.query('SELECT * FROM Users WHERE SID = ?', [agent], function (err, res) {
-		if(res.length > 0) {
-			console.log("Name: " + res);
-			agent = res.Name;
-
-		}
-	});
-	
-	connection.query('SELECT * FROM Inventory WHERE Name = ?', [agent], function (err, inv) {
-		for (var item in inv) {
-			inventory.push(item);
-		}
-	});
+	var inventory = agents[agent].inventory;
+	var campus = agents[agent].campus;
 	
 	if(agents[agent]) {
 		campus = agents[agent].campus;
@@ -102,12 +89,9 @@ app.get('/:id', function(req, res){
 });
 
 app.get('/:id/interaction', function (req, res) {
-	var agent;
-	var inventory;
-	var campus;
+	var agent = req.session.id;
 	var peopleHere = [];
 	var location = req.params.id;
-	getUserInfo(agent, inventory, campus, req);
 
 	for(var i in agents) {
 		if(agents[i].location.id == location && i != agent) {
@@ -155,7 +139,6 @@ app.delete('/:id/:item', function (req, res) {
 app.post('/login/:name', function (req, res) {
 	
 	var name = req.params.name;
-	console.log(name);
 	var campus = [
 		{ 
 		  "id": "lied-center",
@@ -234,8 +217,7 @@ app.post('/login/:name', function (req, res) {
 			connection.query('SELECT * FROM Inventory WHERE Name = ?', 
 											 [name], function (err, inv) {
 				console.log(name + " already in db.");
-				agents[name] = {
-				  "sid": req.session.id,
+				agents[req.session.id] = {
 				  "inventory": [inv[0]],//getInventory(inv)
 				  "location": results[0].location,
 				  "campus": campus
@@ -261,8 +243,7 @@ app.post('/login/:name', function (req, res) {
 			});
 
 			//add this user to the agents in memory
-			agents[name] = {
-				"sid": req.session.id,
+			agents[req.session.id] = {
 				"inventory": ['laptop'],
 				"location": 'strong-hall',
 				"campus": campus
