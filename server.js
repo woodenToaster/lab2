@@ -9,12 +9,6 @@ var credentials = require('./credentials.js');
 var agents = {};
 var app = express();
 
-
-
-  
-
-
-
 //TODO: update 'what' at every location.
 
 var connection = mysql.createConnection({
@@ -275,18 +269,9 @@ app.put('/logout/:name', function (req, res) {
 
 	});
 
-
-
-
-
-	//TODO: Redirect to root
-
-
-	//Remove from memory
+	//Remove agent from memory
 	agents[req.session.id] = {};
-	res.set({'Content-Type': 'application/json'});
-	res.status(200);
-	res.send([]);
+	res.redirect('/');
 });
 
 app.put('/send/tojail/:cookie', function (req, res) {
@@ -350,8 +335,12 @@ var dropbox = function(ix, room, req) {
 /* param: inventory - a mysql query result
  * return: an array of strings
  */
-function getInventory(inventory) {
-	var placeHolder = 'test';
-
+function getInventory(rows) {
+	var inv = [];
+	for (var i in rows) {
+		rows[i]
+		inv.push(rows[i].Inventory);
+	}
+	return inv;
 }   
 
