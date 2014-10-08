@@ -338,7 +338,6 @@ var dropbox = function(ix, room, req) {
 function getInventory(rows) {
 	var inv = [];
 	for (var i in rows) {
-		rows[i]
 		inv.push(rows[i].Inventory);
 	}
 	return inv;
