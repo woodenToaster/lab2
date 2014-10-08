@@ -38,14 +38,14 @@ app.use(require('express-session')({
 
 app.get('/', function(req, res){
 	agents[req.session.id] = {
-		"location": 'strong-hall',
+		"location": "strong-hall",
 		"inventory": [],
-		"campus": { 
+		"campus": [{ 
 			"id": "strong-hall",
 			"where": "StrongHall.jpg",
 			"next": {"east": "eaton-hall", "south": "dole-institute"},
 			"text": "Please log in."
-		},
+		}],
 	}
 	res.status(200);
 	res.sendFile(__dirname + "/index.html");
@@ -54,32 +54,27 @@ app.get('/', function(req, res){
 app.get('/:id', function(req, res){
 	var agent = req.session.id;
 	var inventory = agents[agent].inventory;
-	var campus = agents[agent].campus;
+	var campus= agents[agent].campus;
 	
-	if(agents[agent]) {
-		campus = agents[agent].campus;
-	}
-	console.log(JSON.stringify(campus));
 	if (req.params.id == "inventory") {
 	    res.set({'Content-Type': 'application/json'});
 	    res.status(200);
 	    res.send(inventory);
 	    return;
 	}
-	if(agents[agent]) {
-		if (agents[agent].location == "jail") {
-			res.set({'Content-Type': 'application/json'});
-		    res.status(200);
-		    res.send(campus[campus.length - 1]);
-		    return;
-		}
+	
+	if (agents[agent].location == "jail") {
+		res.set({'Content-Type': 'application/json'});
+	    res.status(200);
+	    res.send(campus[campus.length - 1]);
+	    return;
 	}
+	
 	for (var i in campus) {
-		console.log(campus[i]);
-		if (req.params.id == campus[i]) {
+		if (req.params.id == campus[i].id) {
 		    res.set({'Content-Type': 'application/json'});
 		    res.status(200);
-		    agents[agent].location = campus[i];
+		    agents[agent].location = campus[i].id;
 		    res.send(campus[i]);
 		    return;
 		}
@@ -218,6 +213,7 @@ app.post('/login/:name', function (req, res) {
 											 [name], function (err, inv) {
 				console.log(name + " already in db.");
 				agents[req.session.id] = {
+				  "name": name,
 				  "inventory": [inv[0]],//getInventory(inv)
 				  "location": results[0].location,
 				  "campus": campus
@@ -228,8 +224,9 @@ app.post('/login/:name', function (req, res) {
 			}
 		} else {
 			//Add this user to the database.
-			connection.query('INSERT INTO Users (Name, Location, SID) VALUES (?, ?, ?)',
-							  [name, 'strong-hall', req.session.id], function (err) {
+			
+			connection.query('INSERT INTO Users (Name, Location) VALUES (?, ?)',
+							  [name, 'strong-hall'], function (err) {
 			  	console.log(name + " inserted into db.");
 			  	if(err) {
 			  		console.log(err);
@@ -244,13 +241,49 @@ app.post('/login/:name', function (req, res) {
 
 			//add this user to the agents in memory
 			agents[req.session.id] = {
+				"name": name,
 				"inventory": ['laptop'],
-				"location": 'strong-hall',
+				"location": "strong-hall",
 				"campus": campus
 			}
 		}
 	});
 
+	res.set({'Content-Type': 'application/json'});
+	res.status(200);
+	res.send([]);
+});
+
+app.put('/logout/:name', function (req, res) {
+	//TODO: Update the database with this user's info
+	var agent = req.session.id;
+	//Insert user's inventory
+	for(var i in agents[agent].inventory){
+		connection.query('UPDATE Inventory SET Name = ?, Inventory = ?',
+						  [agents[agent].name, 
+						   agents[agent].inventory[i]], function(err, rows, fields) {
+		  if (err) throw err;
+		});		
+	}
+
+	//Insert user's location
+	connection.query('UPDATE Users SET Name = ?, Location = ?',
+					  [agents[agent].name, 
+					   agents[agent].location,
+					  ], function(err, rows, fields) {
+	  if (err) throw err;
+
+	});
+
+
+
+
+
+	//TODO: Redirect to root
+
+
+	//Remove from memory
+	agents[req.session.id] = {};
 	res.set({'Content-Type': 'application/json'});
 	res.status(200);
 	res.send([]);
@@ -322,21 +355,3 @@ function getInventory(inventory) {
 
 }   
 
-function getUserInfo(agent, inventory, campus, req) {
-	agent = req.session.id;
-	connection.query('SELECT * FROM Users WHERE SID = ?', [agent], function (err, res) {
-		if(res) {
-			console.log(res);
-			agent = res.Name;
-
-		}
-	});
-	connection.query('SELECT * FROM Inventory WHERE Name = ?', [agent], function (err, inv) {
-		for (var item in inv) {
-			inventory.push(item);
-		}
-	});
-	if(agents[agent]) {
-		campus = agents[agent].campus;
-	}
-}

@@ -28,13 +28,14 @@
 
       $("#where").html("booting...");
       where = "strong-hall";
-      var username;
+      var username = null;
 
       
 
       function refresh() {
           
-          if(username === undefined) {
+          if(username === null) {
+              $('#login').html('');
               var loginButton = $('<button/>');
               loginButton.text('Login');
               loginButton.addClass('btn btn-primary');
@@ -52,14 +53,21 @@
               })(loginButton);
               $('#login').append(loginButton);
           } else {
+              $('#login').html('');
               var logoutButton = $('<button/>');
               logoutButton.text('Logout');
               logoutButton.addClass('btn btn-primary');
               (function(logoutButton) {
                 logoutButton.click(function() {
-                  //save info to db
+                  $.ajax("/logout/" + username,
+                    {
+                      success: refresh,
+                      type: "PUT"
+                    }
+                  );
+                  username = null;
+                  refresh();
                 });
-                refresh();
               })(logoutButton);
               $('#login').append(logoutButton);
           }
