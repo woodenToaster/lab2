@@ -197,14 +197,13 @@ app.post('/login/:name', function (req, res) {
 			"id": "jail",
 		  "where": "Jail.jpg",
 		  "next": {},
-		  "text": "You've been put in prison!  Maybe you were framed..."
+		  "text": "You were caught stealing cookies. You've been thrown in jail, punk!"
 		}
     ];
 
 	connection.query('SELECT * FROM Users WHERE Name = ?', [name], function(error, results) {
 		if (results.length != 0) {
-			connection.query('SELECT * FROM Inventory WHERE Name = ?', 
-											 [name], function (err, inv) {
+			connection.query('SELECT * FROM Inventory WHERE Name = ?', [name], function (err, inv) {
 				console.log(name + " already in db.");
 				agents[req.session.id] = {
 				  "name": name,
@@ -274,8 +273,8 @@ app.put('/logout/:name', function (req, res) {
 });
 
 app.put('/send/tojail/:cookie', function (req, res) {
-	agents[req.params.cookie].location = "jail";
-	agents[req.params.cookie].inventory = [];
+	agents[req.session.id].location = "jail";
+	agents[req.session.id].inventory = [];
 	res.set({'Content-Type': 'application/json'});
 	res.status(200);
 	res.send([]);
@@ -331,16 +330,12 @@ var dropbox = function(ix, room, req) {
 	room.what.push(item);
 };
 
-/* param: inventory - a mysql query result
- * return: an array of strings
- */
+//Returns an array of inventory items retrieved from MySQL rows.
 function getInventory(rows) {
-	console.log(rows);
 	var inv = [];
 	for (var i in rows) {
 		inv.push(rows[i].Inventory);
 	}
-	console.log(inv);
 	return inv;
 }   
 

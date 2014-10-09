@@ -5,3 +5,7 @@
 .btn {
 	float: right;
 }
+
+#loginButton {
+	float: left;
+}

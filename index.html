@@ -38,7 +38,8 @@
               $('#login').html('');
               var loginButton = $('<button/>');
               loginButton.text('Login');
-              loginButton.addClass('btn btn-primary');
+              loginButton.addClass('btn btn-primary btn-large');
+              loginButton.attr('id', 'loginButton');
               (function(loginButton) {
                 loginButton.click(function() {
                   username = prompt("Enter your name.");
@@ -117,7 +118,7 @@
           });
 
           $.get("/" + where + "/interaction", function (interactionData) {
-               $("#interaction").html("");
+              $("#interaction").html("");
               for(var i in interactionData) {
                 $("#interaction").append("User with cookie " + interactionData[i] + 
                   " is also here.  Please don't use this information for evil.");
@@ -129,8 +130,8 @@
                     console.log(interactionData[i]);
                     $.ajax("/send/tojail/" + interactionData[i],
                       {
-                        success: refresh,
-                        type: "PUT"
+                        success : refresh,
+                        type : "PUT"
                       }
                     );
                     refresh();
