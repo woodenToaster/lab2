@@ -38,8 +38,7 @@
               $('#login').html('');
               var loginButton = $('<button/>');
               loginButton.text('Login');
-              loginButton.addClass('btn btn-primary btn-large');
-              loginButton.attr('id', 'loginButton');
+              loginButton.addClass('btn btn-primary btn-large log');
               (function(loginButton) {
                 loginButton.click(function() {
                   username = prompt("Enter your name.");
@@ -57,7 +56,7 @@
               $('#login').html('');
               var logoutButton = $('<button/>');
               logoutButton.text('Logout');
-              logoutButton.addClass('btn btn-primary');
+              logoutButton.addClass('btn btn-primary log');
               (function(logoutButton) {
                 logoutButton.click(function() {
                   $.ajax("/logout/" + username,

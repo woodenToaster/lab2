@@ -40,7 +40,7 @@ app.get('/', function(req, res){
 			"next": {"east": "eaton-hall", "south": "dole-institute"},
 			"text": "Please log in."
 		}],
-	}
+	};
 	res.status(200);
 	res.sendFile(__dirname + "/index.html");
 });
@@ -202,7 +202,7 @@ app.post('/login/:name', function (req, res) {
     ];
 
 	connection.query('SELECT * FROM Users WHERE Name = ?', [name], function(error, results) {
-		if (results.length != 0) {
+		if (results.length !== 0) {
 			connection.query('SELECT * FROM Inventory WHERE Name = ?', [name], function (err, inv) {
 				console.log(name + " already in db.");
 				agents[req.session.id] = {
@@ -215,11 +215,8 @@ app.post('/login/:name', function (req, res) {
 
 			//Delete this user's inventory from the database to make insertion
 			//easier on logout
-			connection.query('DELETE * FROM Inventory WHERE Name = ?', [name], function (err) {
-				if(err) {
-					console.log(err);
-				}
-			});
+			console.log("Deleting inventory");
+			
 			if(error) {
 				console.log(err);
 			}
@@ -240,7 +237,7 @@ app.post('/login/:name', function (req, res) {
 				"inventory": ['laptop'],
 				"location": "strong-hall",
 				"campus": campus
-			}
+			};
 		}
 	});
 
@@ -252,9 +249,15 @@ app.post('/login/:name', function (req, res) {
 app.put('/logout/:name', function (req, res) {
 	
 	var agent = req.session.id;
+
+	connection.query('DELETE FROM Inventory WHERE Name = ?', [agents[agent].name], function (err) {
+		if(err) {
+			console.log(err);
+		}
+	});
 	//Insert user's inventory
 	for(var i = 0; i < agents[agent].inventory.length; i++){
-		connection.query('INSERT INTO Inventory (Name, Inventory) VALUES (?, ?)',
+		connection.query('INSERT INTO Inventory (Name, Item) VALUES (?, ?)',
 						  [agents[agent].name, agents[agent].inventory[i]], function(err, rows, fields) {
 		  if (err) throw err;
 		});		
@@ -267,9 +270,20 @@ app.put('/logout/:name', function (req, res) {
 	  if (err) throw err;
 	});
 
-	//Remove agent from memory
-	agents[req.session.id] = {};
-	res.redirect('/');
+	//Set agent to default agent
+	agents[req.session.id] = agents[req.session.id] = {
+		"location": "strong-hall",
+		"inventory": [],
+		"campus": [{ 
+			"id": "strong-hall",
+			"where": "StrongHall.jpg",
+			"next": {"east": "eaton-hall", "south": "dole-institute"},
+			"text": "Please log in."
+		}],
+	};
+
+	res.status(200);
+	res.send([]);
 });
 
 app.put('/send/tojail/:cookie', function (req, res) {
@@ -334,7 +348,7 @@ var dropbox = function(ix, room, req) {
 function getInventory(rows) {
 	var inv = [];
 	for (var i in rows) {
-		inv.push(rows[i].Inventory);
+		inv.push(rows[i].Item);
 	}
 	return inv;
 }   
