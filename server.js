@@ -83,7 +83,7 @@ app.get('/:id/interaction', function (req, res) {
 	var location = req.params.id;
 
 	for(var i in agents) {
-		if(agents[i].location.id == location && i != agent) {
+		if(agents[i].location == location && i != agent) {
 			peopleHere.push(i);
 		}
 	}
@@ -201,19 +201,27 @@ app.post('/login/:name', function (req, res) {
 		}
     ];
 
-	connection.query('SELECT * FROM Users WHERE Name = ?', [name], function(err, results) {
+	connection.query('SELECT * FROM Users WHERE Name = ?', [name], function(error, results) {
 		if (results.length != 0) {
 			connection.query('SELECT * FROM Inventory WHERE Name = ?', 
 											 [name], function (err, inv) {
 				console.log(name + " already in db.");
 				agents[req.session.id] = {
 				  "name": name,
-				  "inventory": [inv[0]],//getInventory(inv)
+				  "inventory": getInventory(inv),
 				  "location": results[0].location,
 				  "campus": campus
-			  };
+			  	};
 			});
-			if(err) {
+
+			//Delete this user's inventory from the database to make insertion
+			//easier on logout
+			connection.query('DELETE * FROM Inventory WHERE Name = ?', [name], function (err) {
+				if(err) {
+					console.log(err);
+				}
+			});
+			if(error) {
 				console.log(err);
 			}
 		} else {
@@ -225,12 +233,6 @@ app.post('/login/:name', function (req, res) {
 			  	if(err) {
 			  		console.log(err);
 			  	}
-			});
-			connection.query('INSERT INTO Inventory (Name, Inventory) VALUES (?,?)',
-							  [name, 'laptop'], function (err) {
-				if(err) {
-					console.log(err);
-				}
 			});
 
 			//add this user to the agents in memory
@@ -249,24 +251,21 @@ app.post('/login/:name', function (req, res) {
 });
 
 app.put('/logout/:name', function (req, res) {
-	//TODO: Update the database with this user's info
+	
 	var agent = req.session.id;
 	//Insert user's inventory
-	for(var i in agents[agent].inventory){
-		connection.query('UPDATE Inventory SET Name = ?, Inventory = ?',
-						  [agents[agent].name, 
-						   agents[agent].inventory[i]], function(err, rows, fields) {
+	for(var i = 0; i < agents[agent].inventory.length; i++){
+		connection.query('INSERT INTO Inventory (Name, Inventory) VALUES (?, ?)',
+						  [agents[agent].name, agents[agent].inventory[i]], function(err, rows, fields) {
 		  if (err) throw err;
 		});		
 	}
 
 	//Insert user's location
-	connection.query('UPDATE Users SET Name = ?, Location = ?',
-					  [agents[agent].name, 
-					   agents[agent].location,
-					  ], function(err, rows, fields) {
+	connection.query('UPDATE Users SET Location = ? WHERE Name = ?',
+					  [agents[agent].location, agents[agent].name], 
+					  function(err, rows, fields) {
 	  if (err) throw err;
-
 	});
 
 	//Remove agent from memory
@@ -336,10 +335,12 @@ var dropbox = function(ix, room, req) {
  * return: an array of strings
  */
 function getInventory(rows) {
+	console.log(rows);
 	var inv = [];
 	for (var i in rows) {
 		inv.push(rows[i].Inventory);
 	}
+	console.log(inv);
 	return inv;
 }   
 
