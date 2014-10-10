@@ -4,12 +4,9 @@ var uuid = require('node-uuid');
 var extend = require('util')._extend;
 var path = require('path');
 var mysql = require('mysql');
-//externalize cookie secret
-var credentials = require('./credentials.js');
+var credentials = {"cookieSecret": "supercalihedonistic"}
 var agents = {};
 var app = express();
-
-//TODO: update 'what' at every location.
 
 var connection = mysql.createConnection({
   host     : 'mysql.eecs.ku.edu',
